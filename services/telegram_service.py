@@ -1,23 +1,30 @@
+
 """
-خدمة Telegram - Telegram Service
+خدمة Telegram المحدثة - Telegram Service with Dual Bots and Tagging
 """
 
 import asyncio
 import json
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import aiohttp
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 class TelegramService:
-    """خدمة التعامل مع Telegram"""
+    """خدمة التعامل مع Telegram مع دعم البوتين والوسم"""
     
-    def __init__(self, bot_token: str, channel_id: str):
-        self.bot_token = bot_token
-        self.channel_id = channel_id
-        self.base_url = f"https://api.telegram.org/bot{bot_token}"
+    def __init__(self, config):
+        self.config = config
+        self.main_bot_token = config.TELEGRAM_BOT_TOKEN
+        self.notification_bot_token = config.TELEGRAM_NOTIFICATION_BOT_TOKEN
+        self.channel_id = config.TELEGRAM_CHANNEL_ID
+        self.archive_channel_id = config.TELEGRAM_ARCHIVE_CHANNEL_ID
+        
+        self.main_bot_url = f"https://api.telegram.org/bot{self.main_bot_token}"
+        self.notification_bot_url = f"https://api.telegram.org/bot{self.notification_bot_token}" if self.notification_bot_token else self.main_bot_url
+        
         self.session = None
         
     async def __aenter__(self):
@@ -30,13 +37,14 @@ class TelegramService:
         if self.session:
             await self.session.close()
     
-    async def get_channel_messages(self, limit: int = 100) -> List[Dict[str, Any]]:
-        """الحصول على رسائل القناة"""
+    async def get_channel_messages(self, limit: int = 100, apply_filter: bool = True) -> List[Dict[str, Any]]:
+        """الحصول على رسائل القناة مع تطبيق فلتر الوسم"""
+        
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
                 
-            url = f"{self.base_url}/getUpdates"
+            url = f"{self.main_bot_url}/getUpdates"
             params = {"limit": limit, "allowed_updates": ["channel_post"]}
             
             async with self.session.get(url, params=params) as response:
@@ -48,7 +56,13 @@ class TelegramService:
                             if "channel_post" in update:
                                 channel_post = update["channel_post"]
                                 if str(channel_post.get("chat", {}).get("id")) == self.channel_id:
-                                    messages.append(self._format_message(channel_post))
+                                    formatted_message = self._format_message(channel_post)
+                                    
+                                    # تطبيق فلتر الوسم
+                                    if apply_filter and self._should_process_message(formatted_message):
+                                        messages.append(formatted_message)
+                                    elif not apply_filter:
+                                        messages.append(formatted_message)
                         
                         logger.info(f"✅ تم الحصول على {len(messages)} رسالة من القناة")
                         return messages
@@ -61,6 +75,29 @@ class TelegramService:
             logger.error(f"❌ خطأ في الحصول على الرسائل: {e}")
             
         return []
+    
+    def _should_process_message(self, message: Dict[str, Any]) -> bool:
+        """تحديد ما إذا كان يجب معالجة الرسالة أم لا بناءً على الفلترة"""
+        
+        text = message.get("text", "")
+        
+        # تخطي الرسائل الموسومة بـ "عقار ناجح"
+        if self.config.SUCCESS_TAG in text:
+            return False
+        
+        # تطبيق فلتر التاريخ إذا كان مفعلاً
+        if self.config.APPLY_DATE_FILTER and self.config.LAST_SUCCESS_DATE:
+            try:
+                last_success_date = datetime.fromisoformat(self.config.LAST_SUCCESS_DATE)
+                message_date = message.get("date")
+                
+                if isinstance(message_date, datetime) and message_date < last_success_date:
+                    return False
+            except Exception as e:
+                logger.warning(f"⚠️ خطأ في فلتر التاريخ: {e}")
+        
+        # معالجة الرسائل النصية فقط
+        return bool(text.strip())
     
     def _format_message(self, channel_post: Dict[str, Any]) -> Dict[str, Any]:
         """تنسيق الرسالة"""
@@ -75,16 +112,24 @@ class TelegramService:
         }
     
     async def send_message_to_channel(self, text: str, parse_mode: str = "HTML") -> bool:
-        """إرسال رسالة إلى القناة"""
-        return await self.send_message(text, parse_mode)
+        """إرسال رسالة إلى القناة باستخدام البوت الرئيسي"""
+        return await self.send_message(text, parse_mode, use_main_bot=True)
     
-    async def send_message(self, text: str, parse_mode: str = "HTML") -> bool:
+    async def send_notification(self, text: str, parse_mode: str = "HTML") -> bool:
+        """إرسال إشعار باستخدام بوت الإشعارات"""
+        return await self.send_message(text, parse_mode, use_main_bot=False)
+    
+    async def send_message(self, text: str, parse_mode: str = "HTML", use_main_bot: bool = True) -> bool:
         """إرسال رسالة إلى القناة"""
+        
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
-                
-            url = f"{self.base_url}/sendMessage"
+            
+            # اختيار البوت المناسب
+            bot_url = self.main_bot_url if use_main_bot else self.notification_bot_url
+            
+            url = f"{bot_url}/sendMessage"
             data = {
                 "chat_id": self.channel_id,
                 "text": text,
@@ -95,7 +140,8 @@ class TelegramService:
                 if response.status == 200:
                     result = await response.json()
                     if result.get("ok"):
-                        logger.info("✅ تم إرسال الرسالة بنجاح")
+                        bot_name = "الرئيسي" if use_main_bot else "الإشعارات"
+                        logger.info(f"✅ تم إرسال الرسالة بواسطة بوت {bot_name}")
                         return True
                     else:
                         logger.error(f"❌ خطأ في إرسال الرسالة: {result.get('description')}")
@@ -109,11 +155,12 @@ class TelegramService:
     
     async def delete_message(self, message_id: int) -> bool:
         """حذف رسالة"""
+        
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
                 
-            url = f"{self.base_url}/deleteMessage"
+            url = f"{self.main_bot_url}/deleteMessage"
             data = {
                 "chat_id": self.channel_id,
                 "message_id": message_id
@@ -137,11 +184,12 @@ class TelegramService:
     
     async def edit_message(self, message_id: int, new_text: str, parse_mode: str = "HTML") -> bool:
         """تعديل رسالة"""
+        
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
                 
-            url = f"{self.base_url}/editMessageText"
+            url = f"{self.main_bot_url}/editMessageText"
             data = {
                 "chat_id": self.channel_id,
                 "message_id": message_id,
@@ -166,17 +214,77 @@ class TelegramService:
         return False
     
     async def add_message_tag(self, message_id: int, tag: str) -> bool:
-        """إضافة وسم للرسالة"""
-        # في Telegram، نستخدم الكلمات المفتاحية في النص لإضافة الوسوم
+        """إضافة وسم للرسالة عبر التعديل"""
+        
         try:
-            # نحصل على الرسالة الحالية أولاً
-            # ثم نضيف الوسم إليها
-            tag_text = f"\n\n🏷️ {tag}"
-            # يمكن تنفيذ هذا عبر تعديل الرسالة أو إضافة رد عليها
-            return True
+            # الحصول على النص الأصلي للرسالة
+            original_text = await self._get_message_text(message_id)
+            if not original_text:
+                return False
+            
+            # إضافة الوسم في بداية الرسالة
+            tagged_text = f"{tag}\n\n{original_text}"
+            
+            # تعديل الرسالة مع الوسم
+            return await self.edit_message(message_id, tagged_text)
+            
         except Exception as e:
             logger.error(f"❌ خطأ في إضافة الوسم: {e}")
             return False
+    
+    async def _get_message_text(self, message_id: int) -> Optional[str]:
+        """الحصول على نص الرسالة"""
+        
+        try:
+            # في Telegram API، لا يمكن الحصول على رسالة واحدة مباشرة
+            # لذا نحصل على آخر الرسائل ونبحث عن المطلوبة
+            messages = await self.get_channel_messages(limit=100, apply_filter=False)
+            
+            for message in messages:
+                if message["message_id"] == message_id:
+                    return message["text"]
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ خطأ في الحصول على نص الرسالة: {e}")
+            return None
+    
+    async def send_to_archive(self, text: str, original_message_id: int) -> bool:
+        """إرسال الرسالة إلى القناة الأرشيفية"""
+        
+        if not self.archive_channel_id:
+            logger.warning("⚠️ لم يتم تعيين قناة الأرشيف")
+            return False
+        
+        try:
+            if not self.session:
+                self.session = aiohttp.ClientSession()
+                
+            url = f"{self.main_bot_url}/sendMessage"
+            
+            # إضافة معلومات الأرشفة
+            archived_text = f"📁 <b>مؤرشف من الرسالة #{original_message_id}</b>\n\n{text}"
+            
+            data = {
+                "chat_id": self.archive_channel_id,
+                "text": archived_text,
+                "parse_mode": "HTML"
+            }
+            
+            async with self.session.post(url, json=data) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    if result.get("ok"):
+                        logger.info(f"✅ تم أرشفة الرسالة {original_message_id}")
+                        return True
+                    else:
+                        logger.error(f"❌ خطأ في الأرشفة: {result.get('description')}")
+                        
+        except Exception as e:
+            logger.error(f"❌ خطأ في إرسال الأرشيف: {e}")
+            
+        return False
     
     def format_property_notification(self, property_data: Dict[str, Any], 
                                    classification: str, 
@@ -204,5 +312,58 @@ class TelegramService:
         
         if similar_property_link and classification == "عقار مكرر":
             message += f"\n🔗 <b>العقار المشابه:</b> {similar_property_link}"
+        
+        # إضافة معلومات إضافية للإشعارات
+        message += f"\n\n⏰ <b>وقت المعالجة:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        
+        if property_data.get("notion_property_id"):
+            notion_link = f"https://www.notion.so/{property_data['notion_property_id'].replace('-', '')}"
+            message += f"\n🔗 <b>رابط Notion:</b> {notion_link}"
             
         return message
+    
+    def format_success_message(self, property_data: Dict[str, Any]) -> str:
+        """تنسيق رسالة العقار الناجح"""
+        
+        formatted_message = f"{self.config.SUCCESS_TAG}\n\n"
+        
+        # إضافة البيان المدمج بتنسيق مُحسَّن
+        statement_lines = property_data.get('البيان', '').split(' | ')
+        for line in statement_lines:
+            if line.strip():
+                formatted_message += f"[{line}]\n"
+        
+        # إضافة تفاصيل إضافية
+        formatted_message += f"\n[اسم المالك: {property_data.get('اسم المالك', 'غير محدد')}]"
+        formatted_message += f"\n[رقم المالك: {property_data.get('رقم المالك', 'غير محدد')}]"
+        formatted_message += f"\n[اتاحة العقار: {property_data.get('اتاحة العقار', 'غير محدد')}]"
+        formatted_message += f"\n[تفاصيل كاملة: {property_data.get('تفاصيل كاملة', 'غير محدد')}]"
+        
+        return formatted_message
+    
+    def format_failed_message(self, property_data: Dict[str, Any]) -> str:
+        """تنسيق رسالة العقار الفاشل"""
+        
+        formatted_message = f"{self.config.FAILED_TAG}\n\n"
+        
+        # إضافة البيان المتاح
+        if property_data.get('البيان'):
+            statement_lines = property_data.get('البيان', '').split(' | ')
+            for line in statement_lines:
+                if line.strip():
+                    formatted_message += f"[{line}]\n"
+        else:
+            # إضافة الحقول المتاحة
+            fields = [
+                'المنطقة', 'نوع الوحدة', 'حالة الوحدة', 'المساحة', 
+                'الدور', 'السعر', 'اسم الموظف', 'حالة الصور'
+            ]
+            
+            for field in fields:
+                value = property_data.get(field, 'غير محدد')
+                formatted_message += f"[{field}: {value}]\n"
+        
+        # إضافة التفاصيل الكاملة
+        formatted_message += f"\n[تفاصيل كاملة: {property_data.get('تفاصيل كاملة', property_data.get('raw_text', 'غير محدد'))}]"
+        
+        return formatted_message

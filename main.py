@@ -1,7 +1,8 @@
+
 #!/usr/bin/env python3
 """
-نظام إدارة العقارات - Real Estate Management System
-نظام شامل لمعالجة وإدارة بيانات العقارات مع التكامل مع Telegram وNotion وZoho CRM
+نظام إدارة العقارات المحدث - Real Estate Management System v2.0
+نظام شامل لمعالجة وإدارة بيانات العقارات مع سلسلة AI محدثة والتكامل مع Telegram وNotion وZoho CRM
 """
 
 import asyncio
@@ -16,7 +17,7 @@ from web_interface import app
 logger = setup_logger(__name__)
 
 class RealEstateSystem:
-    """النظام الرئيسي لإدارة العقارات"""
+    """النظام الرئيسي لإدارة العقارات المحدث"""
     
     def __init__(self):
         self.config = Config()
@@ -24,15 +25,18 @@ class RealEstateSystem:
         self.is_running = False
         
     async def start(self):
-        """بدء تشغيل النظام"""
-        logger.info("🏠 بدء تشغيل نظام إدارة العقارات...")
+        """بدء تشغيل النظام المحدث"""
+        logger.info("🏠 بدء تشغيل نظام إدارة العقارات المحدث v2.0...")
         
         try:
             # التحقق من المتطلبات
             if not self.config.validate():
                 logger.error("❌ فشل في التحقق من الإعدادات")
                 return False
-                
+            
+            # طباعة معلومات التكوين
+            self._print_system_info()
+            
             # بدء المعالج
             self.is_running = True
             await self.processor.start()
@@ -52,26 +56,48 @@ class RealEstateSystem:
             await self.processor.stop()
         logger.info("✅ تم إيقاف النظام")
 
-    async def process_pending_properties(self):
-        """معالجة العقارات المعلقة"""
+    async def process_all_channel_messages(self):
+        """معالجة جميع رسائل القناة بشكل مستمر"""
         if self.is_running:
             await self.processor.process_all_pending()
+    
+    def _print_system_info(self):
+        """طباعة معلومات النظام"""
+        
+        logger.info("📋 معلومات النظام:")
+        logger.info(f"   📱 قناة التيليجرام: {self.config.TELEGRAM_CHANNEL_ID}")
+        logger.info(f"   📁 قناة الأرشيف: {self.config.TELEGRAM_ARCHIVE_CHANNEL_ID or 'غير مُعيَّنة'}")
+        logger.info(f"   🗃️ موديول Zoho: {self.config.ZOHO_MODULE_NAME}")
+        logger.info(f"   🤖 مزودو AI المتاحون: {', '.join(self.config.get_available_ai_providers())}")
+        logger.info(f"   🏷️ وسم النجاح: {self.config.SUCCESS_TAG}")
+        logger.info(f"   📅 فلتر التاريخ: {'مُفعَّل' if self.config.APPLY_DATE_FILTER else 'مُعطَّل'}")
+        
+        if self.config.APPLY_DATE_FILTER and self.config.LAST_SUCCESS_DATE:
+            logger.info(f"   📅 آخر تاريخ نجاح: {self.config.LAST_SUCCESS_DATE}")
 
 async def main():
-    """الدالة الرئيسية"""
+    """الدالة الرئيسية المحدثة"""
     system = RealEstateSystem()
     
     try:
         # بدء النظام
         if await system.start():
-            print("🏠 نظام إدارة العقارات يعمل...")
+            print("🏠 نظام إدارة العقارات المحدث v2.0 يعمل...")
+            print("📊 المميزات الجديدة:")
+            print("   🤖 سلسلة AI محدثة: Gemini → OpenAI → Copilot → Mistral → Groq")
+            print("   🏷️ نظام وسم متقدم مع فلترة ذكية")
+            print("   📝 حقل البيان المدمج (9 حقول)")
+            print("   🤖 بوت إشعارات منفصل")
+            print("   🗃️ موديول Zoho Aqar الجديد")
+            print("   🔍 مطابقة مباشرة من Notion")
             print("🌐 الواجهة متاحة على: http://0.0.0.0:5000")
             print("⏸️  اضغط Ctrl+C للتوقف")
+            print("=" * 60)
             
             # تشغيل الواجهة والمعالجة
             await asyncio.gather(
                 run_web_interface(),
-                system.process_pending_properties()
+                system.process_all_channel_messages()
             )
         else:
             print("❌ فشل في تشغيل النظام")
@@ -90,11 +116,66 @@ async def run_web_interface():
     server = uvicorn.Server(config)
     await server.serve()
 
+def print_welcome_banner():
+    """طباعة بانر الترحيب"""
+    
+    banner = """
+╔══════════════════════════════════════════════════════════════╗
+║               نظام إدارة العقارات المحدث v2.0                ║
+║                Real Estate Management System                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  🏠 معالجة ذكية للعقارات بسلسلة AI متقدمة                    ║
+║  📱 تكامل مع Telegram مع نظام وسم متطور                      ║
+║  🗃️ تخزين في Notion و Zoho CRM (موديول Aqar الجديد)         ║
+║  📊 تقارير يومية وإحصائيات مفصلة                           ║
+║  🤖 5 مزودين للذكاء الاصطناعي + تحليل منطقي               ║
+╚══════════════════════════════════════════════════════════════╝
+    """
+    
+    print(banner)
+
 if __name__ == "__main__":
+    # طباعة بانر الترحيب
+    print_welcome_banner()
+    
     # التحقق من Python version
     if sys.version_info < (3, 8):
         print("❌ يتطلب Python 3.8 أو أحدث")
         sys.exit(1)
+    
+    # التحقق من متغيرات البيئة الأساسية
+    required_env_vars = [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHANNEL_ID", 
+        "NOTION_INTEGRATION_SECRET",
+        "NOTION_PROPERTIES_DB_ID",
+        "NOTION_OWNERS_DB_ID"
+    ]
+    
+    missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        print(f"❌ متغيرات البيئة المفقودة: {', '.join(missing_vars)}")
+        print("💡 تأكد من إضافة جميع متغيرات البيئة المطلوبة في secrets")
+        sys.exit(1)
+    
+    # التحقق من وجود مزود ذكاء اصطناعي واحد على الأقل
+    ai_vars = [
+        "ANTHROPIC_API_KEY",
+        "OPENAI_API_KEY", 
+        "GEMINI_API_KEY",
+        "MISTRAL_API_KEY",
+        "GROQ_API_KEY"
+    ]
+    
+    available_ai = [var for var in ai_vars if os.getenv(var)]
+    
+    if not available_ai:
+        print("❌ يجب إضافة مزود ذكاء اصطناعي واحد على الأقل")
+        print(f"💡 المزودون المدعومون: {', '.join(ai_vars)}")
+        sys.exit(1)
+    
+    print(f"✅ تم العثور على {len(available_ai)} مزود ذكاء اصطناعي")
     
     # تشغيل النظام
     asyncio.run(main())

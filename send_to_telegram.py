@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-إرسال العقارين إلى قناة التليجرام لمعالجتهم
+إرسال عقارات تجريبية إلى قناة التليجرام لاختبار النظام المحدث
 """
 
 import asyncio
 import os
+from config import Config
 from services.telegram_service import TelegramService
 from utils.logger import setup_logger
 
@@ -62,39 +63,38 @@ PROPERTY_MESSAGES = [
 ]
 
 async def send_properties_to_channel():
-    """إرسال العقارين إلى قناة التليجرام"""
+    """إرسال العقارات التجريبية إلى قناة التليجرام"""
     
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    channel_id = os.getenv("TELEGRAM_CHANNEL_ID")
+    config = Config()
     
-    if not bot_token:
+    if not config.TELEGRAM_BOT_TOKEN:
         logger.error("❌ لم يتم العثور على TELEGRAM_BOT_TOKEN")
         return False
     
-    if not channel_id:
+    if not config.TELEGRAM_CHANNEL_ID:
         logger.error("❌ لم يتم العثور على TELEGRAM_CHANNEL_ID")
         return False
     
     try:
-        telegram_service = TelegramService(bot_token, channel_id)
+        async with TelegramService(config) as telegram_service:
         
-        logger.info("📤 بدء إرسال العقارات إلى القناة...")
-        
-        sent_messages = []
-        for i, message in enumerate(PROPERTY_MESSAGES, 1):
-            logger.info(f"📤 إرسال العقار {i} إلى القناة...")
+        logger.info("📤 بدء إرسال العقارات التجريبية إلى القناة...")
             
-            # إرسال الرسالة إلى القناة
-            success = await telegram_service.send_message_to_channel(message)
-            
-            if success:
-                logger.info(f"✅ تم إرسال العقار {i} بنجاح")
-                sent_messages.append(message)
-            else:
-                logger.error(f"❌ فشل في إرسال العقار {i}")
-            
-            # توقف قصير بين الرسائل
-            await asyncio.sleep(2)
+            sent_messages = []
+            for i, message in enumerate(PROPERTY_MESSAGES, 1):
+                logger.info(f"📤 إرسال العقار {i} إلى القناة...")
+                
+                # إرسال الرسالة إلى القناة
+                success = await telegram_service.send_message_to_channel(message)
+                
+                if success:
+                    logger.info(f"✅ تم إرسال العقار {i} بنجاح")
+                    sent_messages.append(message)
+                else:
+                    logger.error(f"❌ فشل في إرسال العقار {i}")
+                
+                # توقف قصير بين الرسائل
+                await asyncio.sleep(3)
         
         logger.info(f"✅ تم إرسال {len(sent_messages)} عقار إلى القناة")
         

@@ -1,10 +1,14 @@
+
 """
-خدمة الذكاء الاصطناعي - AI Service
+خدمة الذكاء الاصطناعي المحدثة - AI Service with Multiple Providers
 """
 
 import json
 import asyncio
+import re
 from typing import Dict, Any, Optional, List
+import aiohttp
+from datetime import datetime
 import anthropic
 from anthropic import Anthropic
 from utils.logger import setup_logger
@@ -12,26 +16,314 @@ from utils.logger import setup_logger
 logger = setup_logger(__name__)
 
 class AIService:
-    """خدمة معالجة النصوص بالذكاء الاصطناعي"""
+    """خدمة معالجة النصوص بالذكاء الاصطناعي مع عدة مزودين"""
     
-    def __init__(self, api_key: str):
-        # The newest Anthropic model is "claude-sonnet-4-20250514", not "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022" nor "claude-3-sonnet-20240229". 
-        # If the user doesn't specify a model, always prefer using "claude-sonnet-4-20250514" as it is the latest model.
-        self.client = Anthropic(api_key=api_key)
-        self.model = "claude-sonnet-4-20250514"
+    def __init__(self, config):
+        self.config = config
         
-    async def extract_property_data(self, raw_text: str) -> Optional[Dict[str, Any]]:
-        """استخراج بيانات العقار من النص الخام"""
+        # تهيئة جميع مزودي الذكاء الاصطناعي
+        self.anthropic_client = None
+        if config.ANTHROPIC_API_KEY:
+            self.anthropic_client = Anthropic(api_key=config.ANTHROPIC_API_KEY)
         
-        prompt = """
-أنت خبير في استخراج بيانات العقارات من النصوص العربية. 
+        self.ai_providers = [
+            {"name": "Gemini", "key": config.GEMINI_API_KEY, "method": self._extract_with_gemini},
+            {"name": "OpenAI", "key": config.OPENAI_API_KEY, "method": self._extract_with_openai},
+            {"name": "Copilot", "key": config.COPILOT_API_KEY, "method": self._extract_with_copilot},
+            {"name": "Mistral", "key": config.MISTRAL_API_KEY, "method": self._extract_with_mistral},
+            {"name": "Groq", "key": config.GROQ_API_KEY, "method": self._extract_with_groq}
+        ]
+        
+        # فلترة المزودين المتاحين فقط
+        self.available_providers = [p for p in self.ai_providers if p["key"]]
+        
+    async def extract_property_data(self, raw_text: str, allow_logical_analysis: bool = True) -> Optional[Dict[str, Any]]:
+        """استخراج بيانات العقار من النص الخام مع سلسلة المزودين"""
+        
+        logger.info("🤖 بدء سلسلة استخراج البيانات بالذكاء الاصطناعي")
+        
+        # تجربة كل مزود بالتتابع
+        for provider in self.available_providers:
+            logger.info(f"🔄 تجربة {provider['name']}...")
+            
+            # 3 محاولات لكل مزود
+            for attempt in range(3):
+                try:
+                    logger.info(f"📝 المحاولة {attempt + 1}/3 مع {provider['name']}")
+                    
+                    result = await provider["method"](raw_text)
+                    if result:
+                        logger.info(f"✅ نجح استخراج البيانات مع {provider['name']}")
+                        
+                        # إضافة حقل البيان المدمج
+                        result["البيان"] = self._generate_property_statement(result)
+                        return result
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ فشل {provider['name']} - المحاولة {attempt + 1}: {e}")
+                
+                # فاصل زمني 15 ثانية بين المحاولات
+                if attempt < 2:
+                    await asyncio.sleep(15)
+            
+            logger.error(f"❌ فشل {provider['name']} في جميع المحاولات")
+        
+        # في حال فشل جميع المزودين
+        logger.warning("⚠️ فشل جميع مزودي الذكاء الاصطناعي")
+        
+        if allow_logical_analysis:
+            # طلب إذن للتحليل المنطقي
+            logger.info("🤔 هل تريد المتابعة بالتحليل المنطقي؟")
+            # TODO: إضافة آلية طلب الإذن من المستخدم
+            
+            # التحليل المنطقي كحل أخير
+            return await self._logical_analysis(raw_text)
+        
+        return None
+    
+    async def _extract_with_gemini(self, raw_text: str) -> Optional[Dict[str, Any]]:
+        """استخراج البيانات باستخدام Gemini"""
+        
+        if not self.config.GEMINI_API_KEY:
+            return None
+            
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={self.config.GEMINI_API_KEY}"
+            
+            payload = {
+                "contents": [{
+                    "parts": [{
+                        "text": self._get_extraction_prompt() + raw_text
+                    }]
+                }]
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        content = data["candidates"][0]["content"]["parts"][0]["text"]
+                        return self._parse_json_response(content)
+                        
+        except Exception as e:
+            logger.error(f"خطأ في Gemini: {e}")
+            
+        return None
+    
+    async def _extract_with_openai(self, raw_text: str) -> Optional[Dict[str, Any]]:
+        """استخراج البيانات باستخدام OpenAI"""
+        
+        if not self.config.OPENAI_API_KEY:
+            return None
+            
+        try:
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.config.OPENAI_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "model": "gpt-4",
+                "messages": [
+                    {"role": "user", "content": self._get_extraction_prompt() + raw_text}
+                ],
+                "max_tokens": 1000,
+                "temperature": 0.1
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        content = data["choices"][0]["message"]["content"]
+                        return self._parse_json_response(content)
+                        
+        except Exception as e:
+            logger.error(f"خطأ في OpenAI: {e}")
+            
+        return None
+    
+    async def _extract_with_copilot(self, raw_text: str) -> Optional[Dict[str, Any]]:
+        """استخراج البيانات باستخدام Copilot"""
+        
+        if not self.config.COPILOT_API_KEY:
+            return None
+            
+        try:
+            # TODO: تطبيق API Copilot الفعلي
+            logger.info("🔧 Copilot API قيد التطوير")
+            return None
+                        
+        except Exception as e:
+            logger.error(f"خطأ في Copilot: {e}")
+            
+        return None
+    
+    async def _extract_with_mistral(self, raw_text: str) -> Optional[Dict[str, Any]]:
+        """استخراج البيانات باستخدام Mistral"""
+        
+        if not self.config.MISTRAL_API_KEY:
+            return None
+            
+        try:
+            url = "https://api.mistral.ai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.config.MISTRAL_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "model": "mistral-large-latest",
+                "messages": [
+                    {"role": "user", "content": self._get_extraction_prompt() + raw_text}
+                ],
+                "max_tokens": 1000,
+                "temperature": 0.1
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        content = data["choices"][0]["message"]["content"]
+                        return self._parse_json_response(content)
+                        
+        except Exception as e:
+            logger.error(f"خطأ في Mistral: {e}")
+            
+        return None
+    
+    async def _extract_with_groq(self, raw_text: str) -> Optional[Dict[str, Any]]:
+        """استخراج البيانات باستخدام Groq"""
+        
+        if not self.config.GROQ_API_KEY:
+            return None
+            
+        try:
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.config.GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "model": "llama-3.1-70b-versatile",
+                "messages": [
+                    {"role": "user", "content": self._get_extraction_prompt() + raw_text}
+                ],
+                "max_tokens": 1000,
+                "temperature": 0.1
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        content = data["choices"][0]["message"]["content"]
+                        return self._parse_json_response(content)
+                        
+        except Exception as e:
+            logger.error(f"خطأ في Groq: {e}")
+            
+        return None
+    
+    async def _logical_analysis(self, raw_text: str) -> Optional[Dict[str, Any]]:
+        """التحليل المنطقي للنص كحل أخير"""
+        
+        logger.info("🧠 بدء التحليل المنطقي...")
+        
+        try:
+            # تحليل منطقي بسيط باستخدام regex وقواعد النص
+            extracted_data = {}
+            
+            # استخراج رقم الهاتف
+            phone_pattern = r'01[0-9]{9}'
+            phone_match = re.search(phone_pattern, raw_text)
+            if phone_match:
+                extracted_data["رقم المالك"] = phone_match.group()
+            
+            # استخراج الأسعار
+            price_patterns = [
+                r'(\d+)\s*ألف',
+                r'(\d+)\s*الف',
+                r'(\d+),000',
+                r'(\d{4,})'
+            ]
+            
+            for pattern in price_patterns:
+                price_match = re.search(pattern, raw_text)
+                if price_match:
+                    price = price_match.group(1)
+                    if 'ألف' in price_match.group() or 'الف' in price_match.group():
+                        price = str(int(price) * 1000)
+                    extracted_data["السعر"] = price
+                    break
+            
+            # استخراج المساحة
+            area_pattern = r'(\d+)\s*متر'
+            area_match = re.search(area_pattern, raw_text)
+            if area_match:
+                extracted_data["المساحة"] = area_match.group(1)
+            
+            # تحديد المنطقة من النص
+            regions_map = {
+                'تجمع': 'احياء تجمع',
+                'اندلس': 'اندلس',
+                'رحاب': 'رحاب',
+                'جاردينيا': 'جاردينيا هايتس'
+            }
+            
+            for keyword, region in regions_map.items():
+                if keyword in raw_text:
+                    extracted_data["المنطقة"] = region
+                    break
+            
+            # تحديد نوع الوحدة
+            if 'شقة' in raw_text or 'شقه' in raw_text:
+                extracted_data["نوع الوحدة"] = "شقة"
+            elif 'فيلا' in raw_text:
+                extracted_data["نوع الوحدة"] = "فيلا"
+            elif 'دوبلكس' in raw_text:
+                extracted_data["نوع الوحدة"] = "دوبلكس"
+            
+            # تحديد حالة الوحدة
+            if 'مفروش' in raw_text:
+                extracted_data["حالة الوحدة"] = "مفروش"
+            elif 'فاضي' in raw_text or 'فاضية' in raw_text:
+                extracted_data["حالة الوحدة"] = "فاضي"
+            elif 'تمليك' in raw_text:
+                extracted_data["حالة الوحدة"] = "تمليك"
+            
+            # إكمال الحقول الناقصة بالقيم الافتراضية
+            self._fill_default_values(extracted_data)
+            
+            # إنشاء كود الوحدة
+            extracted_data["كود الوحدة"] = self._generate_unit_code(extracted_data)
+            
+            # البيان المدمج
+            extracted_data["البيان"] = self._generate_property_statement(extracted_data)
+            
+            logger.info("✅ تم التحليل المنطقي بنجاح")
+            return extracted_data
+            
+        except Exception as e:
+            logger.error(f"❌ خطأ في التحليل المنطقي: {e}")
+            
+        return None
+    
+    def _get_extraction_prompt(self) -> str:
+        """الحصول على prompt استخراج البيانات المحدث"""
+        
+        return """
+أنت خبير في استخراج بيانات العقارات من النصوص العربية وفقاً لدليل التحليل المحدث.
 مهمتك هي تحليل النص المرفق واستخراج المعلومات التالية بدقة:
 
 الحقول المطلوبة:
-- المنطقة: اسم المنطقة أو الحي
-- كود الوحدة: الرقم التعريفي للوحدة
-- نوع الوحدة: (شقة، فيلا، محل، مكتب، إلخ)
-- حالة الوحدة: (مفروش، غير مفروش، نصف مفروش)
+- المنطقة: من القائمة المحددة (احياء تجمع، اندلس، رحاب، جاردينيا هايتس، إلخ)
+- كود الوحدة: سيتم إنشاؤه تلقائياً
+- نوع الوحدة: (شقة، فيلا، دوبلكس، بنتهاوس)
+- حالة الوحدة: (فاضي، مفروش، تمليك)
 - المساحة: المساحة بالمتر المربع (رقم فقط)
 - الدور: رقم الدور أو وصفه
 - السعر: السعر بالجنيه (رقم فقط)
@@ -40,49 +332,22 @@ class AIService:
 - اسم الموظف: اسم الموظف المسؤول
 - اسم المالك: اسم مالك العقار
 - رقم المالك: رقم هاتف المالك
-- اتاحة العقار: (متاح، غير متاح، محجوز)
-- حالة الصور: (بصور، بدون صور)
+- اتاحة العقار: (متاح، غير متاح، مؤجر)
+- حالة الصور: (صور متاحة، صور غير متاحة، صور غير محددة)
 - تفاصيل كاملة: ملخص شامل للعقار
 
-أرجع النتيجة في صيغة JSON فقط، بدون أي نص إضافي.
-
-مثال للإخراج:
-{
-  "المنطقة": "جاردينيا هايتس",
-  "كود الوحدة": "000-1-5-220725-123",
-  "نوع الوحدة": "شقة",
-  "حالة الوحدة": "مفروش",
-  "المساحة": "150",
-  "الدور": "دور تالت",
-  "السعر": "20000",
-  "المميزات": "مكيفه, فيو مفتوح, اسانسير, انترنت",
-  "العنوان": "شارع التسعين الشمالي، التجمع الخامس",
-  "اسم الموظف": "يوسف عماد",
-  "اسم المالك": "هدي المفتي",
-  "رقم المالك": "01000011109",
-  "اتاحة العقار": "متاح",
-  "حالة الصور": "بصور",
-  "تفاصيل كاملة": "شقة مفروشة بالكامل في التجمع الخامس، 150 متر، دور ثالث، مكيفة، فيو مفتوح، اسانسير، انترنت، إيجار شهري 20000 جنيه."
-}
+قواعد هامة:
+- إذا لم تجد المنطقة أو نوع الوحدة أو حالة الوحدة، أرجع null
+- استخدم القيم الافتراضية للحقول المفقودة
+- أرجع النتيجة في صيغة JSON فقط، بدون أي نص إضافي
 
 النص للتحليل:
 """
+    
+    def _parse_json_response(self, content: str) -> Optional[Dict[str, Any]]:
+        """تحليل استجابة JSON من مزودي الذكاء الاصطناعي"""
         
         try:
-            message = await asyncio.to_thread(
-                self.client.messages.create,
-                model=self.model,
-                max_tokens=1000,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt + raw_text
-                    }
-                ]
-            )
-            
-            content = message.content[0].text.strip()
-            
             # إزالة أي نص إضافي قبل أو بعد JSON
             start_idx = content.find('{')
             end_idx = content.rfind('}') + 1
@@ -91,10 +356,19 @@ class AIService:
                 json_str = content[start_idx:end_idx]
                 property_data = json.loads(json_str)
                 
-                # إضافة حقل البيان المدمج
-                property_data["البيان"] = self._generate_property_statement(property_data)
+                # التحقق من الحقول الإلزامية
+                required_fields = ["المنطقة", "نوع الوحدة", "حالة الوحدة"]
+                for field in required_fields:
+                    if not property_data.get(field):
+                        logger.warning(f"⚠️ حقل إلزامي مفقود: {field}")
+                        return None
                 
-                logger.info("✅ تم استخراج بيانات العقار بنجاح")
+                # إكمال الحقول الناقصة
+                self._fill_default_values(property_data)
+                
+                # إنشاء كود الوحدة
+                property_data["كود الوحدة"] = self._generate_unit_code(property_data)
+                
                 return property_data
             else:
                 logger.error("❌ لم يتم العثور على JSON صالح في الاستجابة")
@@ -102,12 +376,63 @@ class AIService:
         except json.JSONDecodeError as e:
             logger.error(f"❌ خطأ في تحليل JSON: {e}")
         except Exception as e:
-            logger.error(f"❌ خطأ في استخراج البيانات: {e}")
+            logger.error(f"❌ خطأ في معالجة الاستجابة: {e}")
             
         return None
     
+    def _fill_default_values(self, property_data: Dict[str, Any]):
+        """إكمال القيم الافتراضية للحقول المفقودة"""
+        
+        defaults = {
+            "المساحة": "00",
+            "الدور": "غير محدد",
+            "السعر": "00",
+            "المميزات": "غير محدد",
+            "العنوان": "غير محدد",
+            "اسم الموظف": "غير محدد",
+            "اسم المالك": "غير محدد",
+            "رقم المالك": "01000000000",
+            "اتاحة العقار": "غير محدد",
+            "حالة الصور": "صور غير محددة",
+            "تفاصيل كاملة": property_data.get("raw_text", "غير محدد")
+        }
+        
+        for field, default_value in defaults.items():
+            if not property_data.get(field):
+                property_data[field] = default_value
+    
+    def _generate_unit_code(self, property_data: Dict[str, Any]) -> str:
+        """إنشاء كود الوحدة وفقاً للمواصفات الجديدة"""
+        
+        # خريطة حالة الوحدة
+        condition_map = {
+            "فاضي": "1",
+            "مفروش": "2", 
+            "تمليك": "3"
+        }
+        
+        # خريطة المناطق
+        region_map = {
+            "دار قرنفل": "1", "قرنفل فيلات": "1", "بنفسج": "1", "ياسمين": "1",
+            "سكن شباب": "3", "مستقبل": "3", "هناجر": "3", "نزهه ثالث": "3",
+            "رحاب": "4", "جاردينيا سيتي": "4",
+            "احياء تجمع": "5", "اندلس": "5", "جاردينيا هايتس": "5"
+        }
+        
+        # الحصول على رموز الكود
+        condition_code = condition_map.get(property_data.get("حالة الوحدة"), "1")
+        region_code = region_map.get(property_data.get("المنطقة"), "5")
+        
+        # التاريخ الحالي
+        current_date = datetime.now().strftime("%d%m%y")
+        
+        # رقم تسلسلي (يمكن تمريره من الخارج)
+        serial = property_data.get("serial_number", "1")
+        
+        return f"c000-{condition_code}-z{region_code}-{current_date}-وحدة-{serial}"
+    
     def _generate_property_statement(self, property_data: Dict[str, Any]) -> str:
-        """إنشاء بيان العقار المدمج"""
+        """إنشاء بيان العقار المدمج من 9 حقول"""
         
         statement_fields = [
             "نوع الوحدة",
@@ -137,7 +462,7 @@ class AIService:
             "نوع الوحدة", 
             "حالة الوحدة",
             "المساحة",
-            "الدور",
+            "الدور", 
             "السعر",
             "اسم المالك",
             "رقم المالك"
@@ -148,7 +473,7 @@ class AIService:
         
         for field in required_fields:
             value = property_data.get(field, "").strip()
-            if not value:
+            if not value or value == "غير محدد":
                 missing_fields.append(field)
             elif field in ["المساحة", "السعر"] and not value.isdigit():
                 invalid_fields.append(f"{field} (يجب أن يكون رقم)")
@@ -172,43 +497,3 @@ class AIService:
         
         # التحقق من أن الرقم يبدأ بـ 01 ويحتوي على 11 رقم
         return len(clean_phone) == 11 and clean_phone.startswith('01')
-    
-    async def enhance_property_description(self, property_data: Dict[str, Any]) -> str:
-        """تحسين وصف العقار"""
-        
-        prompt = f"""
-بناءً على البيانات التالية للعقار، اكتب وصفاً تسويقياً جذاباً ومختصراً:
-
-البيانات:
-{json.dumps(property_data, ensure_ascii=False, indent=2)}
-
-الوصف يجب أن يكون:
-- مختصر (لا يتجاوز 200 كلمة)
-- جذاب وتسويقي
-- يركز على المميزات الرئيسية
-- باللغة العربية
-- بدون مقدمات أو خاتمات
-
-أرجع الوصف فقط بدون أي نص إضافي.
-"""
-        
-        try:
-            message = await asyncio.to_thread(
-                self.client.messages.create,
-                model=self.model,
-                max_tokens=500,
-                messages=[
-                    {
-                        "role": "user", 
-                        "content": prompt
-                    }
-                ]
-            )
-            
-            enhanced_description = message.content[0].text.strip()
-            logger.info("✅ تم تحسين وصف العقار")
-            return enhanced_description
-            
-        except Exception as e:
-            logger.error(f"❌ خطأ في تحسين الوصف: {e}")
-            return property_data.get("تفاصيل كاملة", "")
