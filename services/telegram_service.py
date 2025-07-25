@@ -323,21 +323,25 @@ class TelegramService:
         return message
     
     def format_success_message(self, property_data: Dict[str, Any]) -> str:
-        """تنسيق رسالة العقار الناجح"""
+        """تنسيق رسالة العقار الناجح وفقاً للدليل الجديد"""
         
         formatted_message = f"{self.config.SUCCESS_TAG}\n\n"
         
-        # إضافة البيان المدمج بتنسيق مُحسَّن
-        statement_lines = property_data.get('البيان', '').split(' | ')
-        for line in statement_lines:
-            if line.strip():
-                formatted_message += f"[{line}]\n"
-        
-        # إضافة تفاصيل إضافية
-        formatted_message += f"\n[اسم المالك: {property_data.get('اسم المالك', 'غير محدد')}]"
-        formatted_message += f"\n[رقم المالك: {property_data.get('رقم المالك', 'غير محدد')}]"
-        formatted_message += f"\n[اتاحة العقار: {property_data.get('اتاحة العقار', 'غير محدد')}]"
-        formatted_message += f"\n[تفاصيل كاملة: {property_data.get('تفاصيل كاملة', 'غير محدد')}]"
+        # إضافة البيان المدمج بالتنسيق الجديد (كل حقل في سطر منفصل مع أقواس مربعة)
+        statement = property_data.get('البيان', '')
+        if statement:
+            formatted_message += statement
+        else:
+            # إنشاء البيان يدوياً إذا لم يكن موجوداً
+            fields = [
+                'المنطقة', 'كود الوحدة', 'نوع الوحدة', 'حالة الوحدة', 'المساحة', 
+                'الدور', 'السعر', 'المميزات', 'العنوان', 'اسم الموظف',
+                'اسم المالك', 'رقم المالك', 'اتاحة العقار', 'حالة الصور', 'تفاصيل كاملة'
+            ]
+            
+            for field in fields:
+                value = property_data.get(field, 'غير محدد')
+                formatted_message += f"[{field}: {value}]\n"
         
         return formatted_message
     

@@ -6,3 +6,15 @@ channel = "stable-25_05"
 
 [deployment]
 run = ["sh", "-c", "run"]
+
+[workflows]
+runButton = "Run Real Estate System"
+
+[[workflows.workflow]]
+name = "Run Real Estate System"
+author = 45496958
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
