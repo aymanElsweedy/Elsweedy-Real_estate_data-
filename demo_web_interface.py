@@ -208,7 +208,7 @@ async def stop_system():
         "is_demo": True
     }
 
-@app.get("/api/demo/simulate")
+@app.post("/api/demo/simulate")
 async def simulate_processing():
     """محاكاة معالجة عقار جديد"""
     
