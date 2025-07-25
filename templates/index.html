@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة العقارات</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap RTL CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Custom CSS -->
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i data-feather="home" class="me-2"></i>
+                نظام إدارة العقارات
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item">
+                    <span class="navbar-text me-3">
+                        <i data-feather="clock" class="me-1"></i>
+                        <span id="current-time">{{ current_time.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                    </span>
+                </div>
+                <div class="nav-item">
+                    <span class="badge bg-light text-dark" id="system-status">
+                        <i data-feather="activity" class="me-1"></i>
+                        يتم التحقق...
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">إجمالي العقارات</h5>
+                                <h2 class="mb-0" id="total-properties">{{ stats.get('total_properties', 0) }}</h2>
+                            </div>
+                            <i data-feather="home" class="fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">عقارات ناجحة</h5>
+                                <h2 class="mb-0" id="successful-properties">{{ stats.get('status_counts', {}).get('عقار ناجح', 0) }}</h2>
+                            </div>
+                            <i data-feather="check-circle" class="fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">قيد المعالجة</h5>
+                                <h2 class="mb-0" id="pending-properties">{{ stats.get('status_counts', {}).get('قيد المعالجة', 0) }}</h2>
+                            </div>
+                            <i data-feather="clock" class="fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">عقارات فاشلة</h5>
+                                <h2 class="mb-0" id="failed-properties">{{ stats.get('status_counts', {}).get('عقار فاشل', 0) }}</h2>
+                            </div>
+                            <i data-feather="x-circle" class="fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Controls -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="settings" class="me-2"></i>
+                            التحكم في النظام
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" id="start-system" onclick="controlSystem('start')">
+                                <i data-feather="play" class="me-1"></i>
+                                تشغيل النظام
+                            </button>
+                            <button class="btn btn-danger" id="stop-system" onclick="controlSystem('stop')">
+                                <i data-feather="pause" class="me-1"></i>
+                                إيقاف النظام
+                            </button>
+                            <button class="btn btn-info" onclick="refreshData()">
+                                <i data-feather="refresh-cw" class="me-1"></i>
+                                تحديث البيانات
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i data-feather="list" class="me-2"></i>
+                            العقارات الحديثة
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="status-filter" onchange="filterProperties()">
+                                <option value="">جميع الحالات</option>
+                                <option value="قيد المعالجة">قيد المعالجة</option>
+                                <option value="عقار ناجح">عقار ناجح</option>
+                                <option value="عقار فاشل">عقار فاشل</option>
+                                <option value="عقار مكرر">عقار مكرر</option>
+                                <option value="عقار متعدد">عقار متعدد</option>
+                            </select>
+                            <input type="text" class="form-control form-control-sm" id="search-input" 
+                                   placeholder="البحث..." onkeyup="searchProperties()">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>المعرف</th>
+                                        <th>البيان</th>
+                                        <th>المنطقة</th>
+                                        <th>نوع الوحدة</th>
+                                        <th>المالك</th>
+                                        <th>السعر</th>
+                                        <th>الحالة</th>
+                                        <th>تاريخ الإنشاء</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="properties-table-body">
+                                    <!-- Properties will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Loading Spinner -->
+                        <div class="text-center py-4" id="loading-spinner" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">جاري التحميل...</span>
+                            </div>
+                            <p class="mt-2">جاري تحميل البيانات...</p>
+                        </div>
+                        
+                        <!-- No Data Message -->
+                        <div class="text-center py-4" id="no-data-message" style="display: none;">
+                            <i data-feather="inbox" class="fs-1 text-muted"></i>
+                            <p class="mt-2 text-muted">لا توجد عقارات متاحة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Details Modal -->
+    <div class="modal fade" id="propertyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i data-feather="eye" class="me-2"></i>
+                        تفاصيل العقار
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="property-details">
+                    <!-- Property details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="button" class="btn btn-warning" id="reprocess-btn" onclick="reprocessProperty()">
+                        <i data-feather="refresh-cw" class="me-1"></i>
+                        إعادة المعالجة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i data-feather="bell" class="me-2"></i>
+                <strong class="me-auto">إشعار</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/script.js"></script>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
