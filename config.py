@@ -17,9 +17,9 @@ class Config:
         self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "")
         
         # Notion Configuration
-        self.NOTION_INTEGRATION_SECRET = os.getenv("NOTION_API_KEY", "")
-        self.NOTION_PROPERTIES_DB_ID = os.getenv("PROPERTIES_DATABASE_ID", "")
-        self.NOTION_OWNERS_DB_ID = os.getenv("OWNERS_DATABASE_ID", "")
+        self.NOTION_INTEGRATION_SECRET = os.getenv("NOTION_INTEGRATION_SECRET", "")
+        self.NOTION_PROPERTIES_DB_ID = os.getenv("NOTION_PROPERTIES_DB_ID", "")
+        self.NOTION_OWNERS_DB_ID = os.getenv("NOTION_OWNERS_DB_ID", "")
         
         # AI Services Configuration - جميع مزودي الذكاء الاصطناعي
         self.ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
