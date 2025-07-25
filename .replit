@@ -100,6 +100,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python send_test_messages.py"
 
+[[workflows.workflow]]
+name = "Simulate Real Bot Work"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python simulate_sender_bot.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
