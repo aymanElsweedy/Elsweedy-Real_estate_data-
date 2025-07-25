@@ -12,7 +12,8 @@ logger = setup_logger(__name__)
 
 # بيانات البوت
 SENDER_BOT_TOKEN = "7613162592:AAFnqn3_1lPPClVUa1jckOXj44C2MGCVLHs"
-ARCHIVE_CHANNEL_ID = "-1002711636474"
+# القناة الرئيسية للمعالجة (حيث يرسل البوت الرسائل من الزملاء)
+MAIN_PROCESSING_CHANNEL_ID = "-1002394758962"  # القناة الرئيسية للمعالجة
 
 # الرسائل التجريبية
 TEST_MESSAGES = [
@@ -94,7 +95,7 @@ async def send_test_message(session, text, message_num):
     
     url = f"https://api.telegram.org/bot{SENDER_BOT_TOKEN}/sendMessage"
     data = {
-        "chat_id": ARCHIVE_CHANNEL_ID,
+        "chat_id": MAIN_PROCESSING_CHANNEL_ID,
         "text": text,
         "parse_mode": "HTML"
     }
@@ -121,7 +122,7 @@ async def send_all_test_messages():
     
     logger.info("🚀 بدء إرسال الرسائل التجريبية...")
     logger.info(f"📱 البوت: {SENDER_BOT_TOKEN[:20]}...")
-    logger.info(f"📢 القناة: {ARCHIVE_CHANNEL_ID}")
+    logger.info(f"📢 القناة الرئيسية: {MAIN_PROCESSING_CHANNEL_ID}")
     logger.info("=" * 50)
     
     async with aiohttp.ClientSession() as session:
@@ -141,12 +142,12 @@ async def send_all_test_messages():
         logger.info(f"✅ تم إرسال {sent_count}/{len(TEST_MESSAGES)} رسالة بنجاح")
         
         if sent_count > 0:
-            logger.info("🎉 يمكنك الآن فحص قناة الأرشيف لرؤية الرسائل")
-            logger.info("🔄 يمكنك تشغيل النظام الرئيسي لمعالجة هذه الرسائل")
+            logger.info("🎉 يمكنك الآن فحص القناة الرئيسية لرؤية الرسائل")
+            logger.info("🔄 النظام سيعالج هذه الرسائل ويأرشفها تلقائياً")
 
 async def main():
     """الدالة الرئيسية"""
-    print("📤 إرسال رسائل تجريبية إلى قناة الأرشيف")
+    print("📤 إرسال رسائل تجريبية إلى القناة الرئيسية للمعالجة")
     print("=" * 50)
     
     await send_all_test_messages()

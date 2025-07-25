@@ -91,6 +91,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python simulate_sender_bot.py"
 
+[[workflows.workflow]]
+name = "Send Messages to Main Channel"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python send_test_messages.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
