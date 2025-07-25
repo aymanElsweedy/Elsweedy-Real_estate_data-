@@ -8,7 +8,7 @@ channel = "stable-25_05"
 run = ["sh", "-c", "run"]
 
 [workflows]
-runButton = "Start Real Estate System"
+runButton = "Start Real System - Live"
 
 [[workflows.workflow]]
 name = "Run Real Estate System"
@@ -147,6 +147,15 @@ args = "python real_system.py"
 
 [[workflows.workflow]]
 name = "Start Real Estate System"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python real_system.py"
+
+[[workflows.workflow]]
+name = "Start Real System - Live"
 author = 45516282
 mode = "sequential"
 
