@@ -82,6 +82,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python send_to_telegram.py"
 
+[[workflows.workflow]]
+name = "Simulate Sender Bot"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python simulate_sender_bot.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80

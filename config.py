@@ -13,7 +13,8 @@ class Config:
         # Telegram Bot Configuration - البوتين
         self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_OUTPUT_TOKEN", "")
         self.TELEGRAM_NOTIFICATION_BOT_TOKEN = os.getenv("TELEGRAM_NOTIFICATION_BOT_TOKEN", "8220146739:AAELNrVXHGJodSaEMwglQwIQZemz8C_4NTY")
-        self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_PRIVATE_CHANNEL_ID", "")
+        # القناة الرئيسية للمعالجة (ضع معرف القناة هنا)
+        self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_PRIVATE_CHANNEL_ID", "-1002394758962")  # معرف القناة الرئيسية
         self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "-1002711636474")
         
         # Telegram API Configuration
