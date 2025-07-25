@@ -92,27 +92,36 @@ async def send_properties_to_channel():
     
     config = Config()
     
-    if not config.TELEGRAM_BOT_TOKEN:
-        logger.error("❌ لم يتم العثور على TELEGRAM_BOT_TOKEN")
+    # استخدام بوت الإرسال الجديد
+    sender_bot_token = config.TELEGRAM_BOT_sender_TOKEN
+    if not sender_bot_token:
+        logger.error("❌ لم يتم العثور على TELEGRAM_BOT_sender_TOKEN")
         return False
     
-    if not config.TELEGRAM_CHANNEL_ID:
-        logger.error("❌ لم يتم العثور على TELEGRAM_CHANNEL_ID")
+    # استخدام قناة الأرشيف كوجهة للإرسال
+    target_channel = config.TELEGRAM_ARCHIVE_CHANNEL_ID
+    if not target_channel:
+        logger.error("❌ لم يتم العثور على TELEGRAM_ARCHIVE_CHANNEL_ID")
         return False
     
     try:
-        async with TelegramService(config) as telegram_service:
-            logger.info("📤 بدء إرسال العقارات التجريبية إلى القناة...")
+        # إنشاء خدمة تليجرام مخصصة للإرسال
+        sender_config = Config()
+        sender_config.TELEGRAM_BOT_TOKEN = sender_bot_token
+        sender_config.TELEGRAM_CHANNEL_ID = target_channel
+        
+        async with TelegramService(sender_config) as telegram_service:
+            logger.info(f"📤 بدء إرسال العقارات التجريبية إلى القناة {target_channel}...")
             
             sent_messages = []
             for i, message in enumerate(PROPERTY_MESSAGES, 1):
                 logger.info(f"📤 إرسال العقار {i}/{len(PROPERTY_MESSAGES)} إلى القناة...")
                 
-                # إرسال الرسالة إلى القناة
+                # إرسال الرسالة إلى قناة الأرشيف
                 success = await telegram_service.send_message_to_channel(message)
                 
                 if success:
-                    logger.info(f"✅ تم إرسال العقار {i} بنجاح")
+                    logger.info(f"✅ تم إرسال العقار {i} بنجاح إلى قناة الأرشيف")
                     sent_messages.append(message)
                 else:
                     logger.error(f"❌ فشل في إرسال العقار {i}")

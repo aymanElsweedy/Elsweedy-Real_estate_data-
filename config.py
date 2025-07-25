@@ -12,9 +12,16 @@ class Config:
     def __init__(self):
         # Telegram Bot Configuration - البوتين
         self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_OUTPUT_TOKEN", "")
-        self.TELEGRAM_NOTIFICATION_BOT_TOKEN = os.getenv("TELEGRAM_NOTIFICATION_BOT_TOKEN", "")
+        self.TELEGRAM_NOTIFICATION_BOT_TOKEN = os.getenv("TELEGRAM_NOTIFICATION_BOT_TOKEN", "8220146739:AAELNrVXHGJodSaEMwglQwIQZemz8C_4NTY")
         self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_PRIVATE_CHANNEL_ID", "")
-        self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "")
+        self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "-1002711636474")
+        
+        # Telegram API Configuration
+        self.TELEGRAM_API_ID = os.getenv("TELEGRAM_API_ID", "23358202")
+        self.TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH", "d66eecdb7446f53d7d591d579de535ca")
+        self.TELEGRAM_BOT_sender_TOKEN = os.getenv("TELEGRAM_BOT_sender_TOKEN", "7613162592:AAFnqn3_1lPPClVUa1jckOXj44C2MGCVLHs")
+        self.TELEGRAM_sender_CHAT_ID = os.getenv("TELEGRAM_sender_CHAT_ID", "7613162592")
+        self.TELEGRAM_NOTIFICATION_CHAT_ID = os.getenv("TELEGRAM_NOTIFICATION_CHAT_ID", "8220146739")
         
         # Notion Configuration
         self.NOTION_INTEGRATION_SECRET = os.getenv("NOTION_INTEGRATION_SECRET", "")
