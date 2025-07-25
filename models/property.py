@@ -73,6 +73,8 @@ class PropertyData:
     notion_property_id: Optional[str] = None
     notion_owner_id: Optional[str] = None
     zoho_lead_id: Optional[str] = None
+    serial_number: Optional[int] = None  # الرقم التسلسلي المميز
+
     
     # بيانات إضافية
     processing_attempts: int = 0
