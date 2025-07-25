@@ -46,6 +46,24 @@ mode = "sequential"
 task = "shell.exec"
 args = "python send_test_messages.py"
 
+[[workflows.workflow]]
+name = "Send Test Messages Direct"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python send_test_messages.py"
+
+[[workflows.workflow]]
+name = "Send Organized Properties"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python send_to_telegram.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
