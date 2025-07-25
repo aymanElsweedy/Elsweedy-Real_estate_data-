@@ -143,39 +143,14 @@ if __name__ == "__main__":
         print("❌ يتطلب Python 3.8 أو أحدث")
         sys.exit(1)
     
-    # التحقق من متغيرات البيئة الأساسية
-    required_env_vars = [
-        "TELEGRAM_BOT_TOKEN",
-        "TELEGRAM_CHANNEL_ID", 
-        "NOTION_INTEGRATION_SECRET",
-        "NOTION_PROPERTIES_DB_ID",
-        "NOTION_OWNERS_DB_ID"
-    ]
-    
-    missing_vars = [var for var in required_env_vars if not os.getenv(var)]
-    
-    if missing_vars:
-        print(f"❌ متغيرات البيئة المفقودة: {', '.join(missing_vars)}")
-        print("💡 تأكد من إضافة جميع متغيرات البيئة المطلوبة في secrets")
+    # التحقق من الإعدادات عبر Config
+    config = Config()
+    if not config.validate():
+        print("❌ فشل في التحقق من الإعدادات")
+        print("💡 تأكد من إضافة البيانات المطلوبة أو استخدام القيم الافتراضية")
         sys.exit(1)
     
-    # التحقق من وجود مزود ذكاء اصطناعي واحد على الأقل
-    ai_vars = [
-        "ANTHROPIC_API_KEY",
-        "OPENAI_API_KEY", 
-        "GEMINI_API_KEY",
-        "MISTRAL_API_KEY",
-        "GROQ_API_KEY"
-    ]
-    
-    available_ai = [var for var in ai_vars if os.getenv(var)]
-    
-    if not available_ai:
-        print("❌ يجب إضافة مزود ذكاء اصطناعي واحد على الأقل")
-        print(f"💡 المزودون المدعومون: {', '.join(ai_vars)}")
-        sys.exit(1)
-    
-    print(f"✅ تم العثور على {len(available_ai)} مزود ذكاء اصطناعي")
+    print(f"✅ تم العثور على {len(config.get_available_ai_providers())} مزود ذكاء اصطناعي")
     
     # تشغيل النظام
     asyncio.run(main())
