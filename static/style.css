@@ -382,6 +382,69 @@ body {
     background: #a8a8a8;
 }
 
+/* Settings Page Styles */
+.settings-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.settings-card:hover {
+    transform: translateY(-2px);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.card.border-success {
+    border-color: var(--success-color) !important;
+}
+
+.card.border-danger {
+    border-color: var(--danger-color) !important;
+}
+
+.test-result-icon {
+    font-size: 3rem;
+}
+
+/* Settings form animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-card {
+    animation: slideIn 0.5s ease-out;
+}
+
+/* Responsive adjustments for settings */
+@media (max-width: 768px) {
+    .settings-form .col-md-4 {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
 /* Print Styles */
 @media print {
     .navbar,

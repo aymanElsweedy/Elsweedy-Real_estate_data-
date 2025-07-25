@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات التكامل - نظام إدارة العقارات</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap RTL CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Custom CSS -->
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i data-feather="home" class="me-2"></i>
+                نظام إدارة العقارات
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item">
+                    <a href="/" class="btn btn-outline-light btn-sm">
+                        <i data-feather="arrow-right" class="me-1"></i>
+                        العودة للرئيسية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i data-feather="settings" class="me-2"></i>
+                            إعدادات التكامل
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            يمكنك تحديث معلومات التكامل مع الخدمات الخارجية من هنا. 
+                            تأكد من صحة البيانات قبل الحفظ واختبر الاتصال للتأكد من عمل التكامل.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Form -->
+        <form id="settingsForm" onsubmit="saveSettings(event)">
+            <div class="row">
+                <!-- Notion Settings -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i data-feather="database" class="me-2"></i>
+                                إعدادات Notion
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="notion_secret" class="form-label">رمز التكامل</label>
+                                <input type="password" class="form-control" id="notion_secret" name="notion_secret" 
+                                       value="{{ settings.notion_secret }}" placeholder="secret_xxxxxxxxxxxxx">
+                                <div class="form-text">رمز التكامل السري من Notion</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="notion_properties_db" class="form-label">معرف قاعدة العقارات</label>
+                                <input type="text" class="form-control" id="notion_properties_db" name="notion_properties_db" 
+                                       value="{{ settings.notion_properties_db }}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                                <div class="form-text">معرف قاعدة بيانات العقارات</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="notion_owners_db" class="form-label">معرف قاعدة الملاك</label>
+                                <input type="text" class="form-control" id="notion_owners_db" name="notion_owners_db" 
+                                       value="{{ settings.notion_owners_db }}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                                <div class="form-text">معرف قاعدة بيانات الملاك</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zoho Settings -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i data-feather="users" class="me-2"></i>
+                                إعدادات Zoho CRM
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="zoho_client_id" class="form-label">معرف العميل</label>
+                                <input type="text" class="form-control" id="zoho_client_id" name="zoho_client_id" 
+                                       value="{{ settings.zoho_client_id }}" placeholder="1000.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX">
+                                <div class="form-text">Client ID من تطبيق Zoho</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="zoho_client_secret" class="form-label">رمز العميل السري</label>
+                                <input type="password" class="form-control" id="zoho_client_secret" name="zoho_client_secret" 
+                                       value="{{ settings.zoho_client_secret }}" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                                <div class="form-text">Client Secret من تطبيق Zoho</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="zoho_refresh_token" class="form-label">رمز التحديث</label>
+                                <input type="password" class="form-control" id="zoho_refresh_token" name="zoho_refresh_token" 
+                                       value="{{ settings.zoho_refresh_token }}" placeholder="1000.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                                <div class="form-text">Refresh Token من Zoho</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telegram Settings -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i data-feather="message-circle" class="me-2"></i>
+                                إعدادات Telegram
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="telegram_bot_token" class="form-label">رمز البوت الرئيسي</label>
+                                <input type="password" class="form-control" id="telegram_bot_token" name="telegram_bot_token" 
+                                       value="{{ settings.telegram_bot_token }}" placeholder="xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                                <div class="form-text">رمز البوت للمعالجة</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telegram_notification_token" class="form-label">رمز بوت الإشعارات</label>
+                                <input type="password" class="form-control" id="telegram_notification_token" name="telegram_notification_token" 
+                                       value="{{ settings.telegram_notification_token }}" placeholder="xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                                <div class="form-text">رمز بوت الإشعارات</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telegram_channel_id" class="form-label">معرف القناة</label>
+                                <input type="text" class="form-control" id="telegram_channel_id" name="telegram_channel_id" 
+                                       value="{{ settings.telegram_channel_id }}" placeholder="-100xxxxxxxxxx">
+                                <div class="form-text">معرف قناة الأرشيف</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telegram_sender_token" class="form-label">رمز البوت المُرسِل</label>
+                                <input type="password" class="form-control" id="telegram_sender_token" name="telegram_sender_token" 
+                                       value="{{ settings.telegram_sender_token }}" placeholder="xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                                <div class="form-text">رمز @RealEstate_Sender_bot</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telegram_sender_chat_id" class="form-label">معرف البوت المُرسِل</label>
+                                <input type="text" class="form-control" id="telegram_sender_chat_id" name="telegram_sender_chat_id" 
+                                       value="{{ settings.telegram_sender_chat_id }}" placeholder="xxxxxxxxxx">
+                                <div class="form-text">معرف chat للبوت المُرسِل</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button type="button" class="btn btn-warning" onclick="testConnections()">
+                                    <i data-feather="wifi" class="me-1"></i>
+                                    اختبار الاتصال
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i data-feather="save" class="me-1"></i>
+                                    حفظ الإعدادات
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                    <i data-feather="refresh-cw" class="me-1"></i>
+                                    إعادة تعيين
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Test Results -->
+        <div class="row" id="testResults" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="check-circle" class="me-2"></i>
+                            نتائج اختبار الاتصال
+                        </h5>
+                    </div>
+                    <div class="card-body" id="testResultsBody">
+                        <!-- Test results will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i data-feather="bell" class="me-2"></i>
+                <strong class="me-auto">إشعار</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Save settings function
+        async function saveSettings(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i data-feather="loader" class="spinner-border spinner-border-sm me-1"></i> جاري الحفظ...';
+                
+                const formData = new FormData(event.target);
+                
+                const response = await fetch('/api/settings/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showToast('تم حفظ الإعدادات بنجاح', 'success');
+                } else {
+                    showToast('خطأ في حفظ الإعدادات: ' + result.detail, 'error');
+                }
+                
+            } catch (error) {
+                showToast('خطأ في الاتصال: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                feather.replace();
+            }
+        }
+
+        // Test connections function
+        async function testConnections() {
+            const testBtn = document.querySelector('[onclick="testConnections()"]');
+            const originalText = testBtn.innerHTML;
+            
+            try {
+                testBtn.disabled = true;
+                testBtn.innerHTML = '<i data-feather="loader" class="spinner-border spinner-border-sm me-1"></i> جاري الاختبار...';
+                
+                const response = await fetch('/api/settings/test', {
+                    method: 'POST'
+                });
+                
+                const results = await response.json();
+                
+                displayTestResults(results);
+                
+            } catch (error) {
+                showToast('خطأ في اختبار الاتصال: ' + error.message, 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = originalText;
+                feather.replace();
+            }
+        }
+
+        // Display test results
+        function displayTestResults(results) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultsBody = document.getElementById('testResultsBody');
+            
+            let html = '<div class="row">';
+            
+            // Notion result
+            html += `
+                <div class="col-md-4 mb-3">
+                    <div class="card ${results.notion ? 'border-success' : 'border-danger'}">
+                        <div class="card-body text-center">
+                            <i data-feather="${results.notion ? 'check-circle' : 'x-circle'}" 
+                               class="fs-1 ${results.notion ? 'text-success' : 'text-danger'}"></i>
+                            <h6 class="mt-2">Notion</h6>
+                            <p class="text-muted">${results.notion ? 'متصل بنجاح' : 'فشل الاتصال'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Zoho result
+            html += `
+                <div class="col-md-4 mb-3">
+                    <div class="card ${results.zoho ? 'border-success' : 'border-danger'}">
+                        <div class="card-body text-center">
+                            <i data-feather="${results.zoho ? 'check-circle' : 'x-circle'}" 
+                               class="fs-1 ${results.zoho ? 'text-success' : 'text-danger'}"></i>
+                            <h6 class="mt-2">Zoho CRM</h6>
+                            <p class="text-muted">${results.zoho ? 'متصل بنجاح' : 'فشل الاتصال'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Telegram result
+            html += `
+                <div class="col-md-4 mb-3">
+                    <div class="card ${results.telegram ? 'border-success' : 'border-danger'}">
+                        <div class="card-body text-center">
+                            <i data-feather="${results.telegram ? 'check-circle' : 'x-circle'}" 
+                               class="fs-1 ${results.telegram ? 'text-success' : 'text-danger'}"></i>
+                            <h6 class="mt-2">Telegram</h6>
+                            <p class="text-muted">${results.telegram ? 'متصل بنجاح' : 'فشل الاتصال'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            html += '</div>';
+            
+            // Show errors if any
+            if (results.errors && results.errors.length > 0) {
+                html += '<div class="alert alert-danger"><h6>الأخطاء:</h6><ul class="mb-0">';
+                results.errors.forEach(error => {
+                    html += `<li>${error}</li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            resultsBody.innerHTML = html;
+            resultsDiv.style.display = 'block';
+            feather.replace();
+        }
+
+        // Reset form function
+        function resetForm() {
+            if (confirm('هل أنت متأكد من إعادة تعيين النموذج؟')) {
+                document.getElementById('settingsForm').reset();
+                document.getElementById('testResults').style.display = 'none';
+            }
+        }
+
+        // Show toast function
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            const typeMap = {
+                'success': { class: 'text-success', icon: 'check-circle' },
+                'error': { class: 'text-danger', icon: 'x-circle' },
+                'warning': { class: 'text-warning', icon: 'alert-triangle' },
+                'info': { class: 'text-info', icon: 'info' }
+            };
+            
+            const toastType = typeMap[type] || typeMap['info'];
+            
+            toastMessage.innerHTML = `
+                <i data-feather="${toastType.icon}" class="me-2 ${toastType.class}"></i>
+                ${message}
+            `;
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            feather.replace();
+        }
+    </script>
+</body>
+</html>
