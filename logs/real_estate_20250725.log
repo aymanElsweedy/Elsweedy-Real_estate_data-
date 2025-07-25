@@ -1,0 +1,82 @@
+2025-07-25 17:16:45 - __main__ - INFO - 🏠 بدء تشغيل نظام إدارة العقارات المحدث v2.0...
+2025-07-25 17:16:45 - __main__ - INFO - 📋 معلومات النظام:
+2025-07-25 17:16:45 - __main__ - INFO -    📱 قناة التيليجرام: -1002711636474
+2025-07-25 17:16:45 - __main__ - INFO -    📁 قناة الأرشيف: -1002711636474
+2025-07-25 17:16:45 - __main__ - INFO -    🗃️ موديول Zoho: Aqar
+2025-07-25 17:16:45 - __main__ - INFO -    🤖 مزودو AI المتاحون: Gemini, OpenAI, Copilot, Mistral, Groq, Anthropic
+2025-07-25 17:16:45 - __main__ - INFO -    🏷️ وسم النجاح: عقار ناجح ✅
+2025-07-25 17:16:45 - __main__ - INFO -    📅 فلتر التاريخ: مُعطَّل
+2025-07-25 17:16:45 - utils.database - INFO - ✅ تم تهيئة قاعدة البيانات
+2025-07-25 17:16:45 - processors.property_processor - INFO - ✅ تم بدء معالج العقارات المحدث
+2025-07-25 17:16:45 - processors.property_processor - INFO - 🤖 مزودو الذكاء الاصطناعي المتاحون: Gemini, OpenAI, Copilot, Mistral, Groq, Anthropic
+2025-07-25 17:16:45 - __main__ - INFO - ✅ تم تشغيل النظام بنجاح
+2025-07-25 17:16:46 - processors.property_processor - INFO - 🔄 بدء دورة معالجة جديدة...
+2025-07-25 17:16:46 - utils.database - INFO - ✅ تم تهيئة قاعدة البيانات
+2025-07-25 17:16:46 - web_interface - INFO - 🌐 تم تشغيل الواجهة الويب
+2025-07-25 17:16:49 - services.telegram_service - INFO - ✅ تم الحصول على 1 رسالة من القناة
+2025-07-25 17:16:49 - utils.database - INFO - ✅ تم حفظ العقار في قاعدة البيانات: 1
+2025-07-25 17:16:49 - processors.property_processor - INFO - 📥 تم استلام رسالة جديدة: 21
+2025-07-25 17:16:49 - processors.property_processor - INFO - 📥 تم استلام 1 رسالة جديدة للمعالجة
+2025-07-25 17:16:49 - processors.property_processor - INFO - 🔄 معالجة 1 عقار معلق
+2025-07-25 17:16:49 - property.21 - INFO - 🏠 بدء معالجة العقار - المنطقة: 
+2025-07-25 17:16:49 - property.21 - INFO - ⚙️ استخراج البيانات - سلسلة الذكاء الاصطناعي
+2025-07-25 17:16:49 - property.21 - ERROR - ❌ استخراج البيانات - خطأ: 'PropertyData' object has no attribute 'serial_number'
+2025-07-25 17:16:49 - utils.database - INFO - ✅ تم تحديث العقار: 21
+2025-07-25 17:16:49 - services.telegram_service - ERROR - ❌ خطأ HTTP في حذف الرسالة: 400
+2025-07-25 17:16:49 - services.telegram_service - INFO - ✅ تم إرسال الرسالة بواسطة بوت الرئيسي
+2025-07-25 17:16:49 - property.21 - INFO - ✅ استبدال رسالة الفشل - تم التنسيق
+2025-07-25 17:16:49 - property.21 - ERROR - 💥 فشلت معالجة العقار - الحالة النهائية: عقار فاشل
+2025-07-25 17:16:50 - processors.property_processor - ERROR - ❌ خطأ في إعادة معالجة العقارات الفاشلة: 'DatabaseManager' object has no attribute 'get_failed_properties'
+2025-07-25 17:16:50 - processors.property_processor - INFO - ✅ انتهت دورة المعالجة - نجح: 1
+2025-07-25 17:21:50 - processors.property_processor - INFO - 🔄 بدء دورة معالجة جديدة...
+2025-07-25 17:22:11 - services.telegram_service - ERROR - ❌ خطأ في الحصول على الرسائل: Cannot connect to host api.telegram.org:443 ssl:default [Multiple exceptions: [WinError 121] The semaphore timeout period has expired, [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+2025-07-25 17:22:11 - processors.property_processor - INFO - 🔄 معالجة 1 عقار معلق
+2025-07-25 17:22:11 - property.21 - INFO - 🏠 بدء معالجة العقار - المنطقة: 
+2025-07-25 17:22:11 - property.21 - INFO - ⚙️ استخراج البيانات - سلسلة الذكاء الاصطناعي
+2025-07-25 17:22:11 - property.21 - ERROR - ❌ استخراج البيانات - خطأ: 'PropertyData' object has no attribute 'serial_number'
+2025-07-25 17:22:11 - utils.database - INFO - ✅ تم تحديث العقار: 21
+2025-07-25 17:22:12 - services.telegram_service - ERROR - ❌ خطأ HTTP في حذف الرسالة: 400
+2025-07-25 17:22:12 - services.telegram_service - INFO - ✅ تم إرسال الرسالة بواسطة بوت الرئيسي
+2025-07-25 17:22:12 - property.21 - INFO - ✅ استبدال رسالة الفشل - تم التنسيق
+2025-07-25 17:22:12 - property.21 - ERROR - 💥 فشلت معالجة العقار - الحالة النهائية: عقار فاشل
+2025-07-25 17:22:13 - processors.property_processor - ERROR - ❌ خطأ في إعادة معالجة العقارات الفاشلة: 'DatabaseManager' object has no attribute 'get_failed_properties'
+2025-07-25 17:22:13 - processors.property_processor - INFO - ✅ انتهت دورة المعالجة - نجح: 1
+2025-07-25 17:27:13 - processors.property_processor - INFO - 🔄 بدء دورة معالجة جديدة...
+2025-07-25 17:27:34 - services.telegram_service - ERROR - ❌ خطأ في الحصول على الرسائل: Cannot connect to host api.telegram.org:443 ssl:default [Multiple exceptions: [WinError 121] The semaphore timeout period has expired, [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+2025-07-25 17:27:34 - processors.property_processor - INFO - 🔄 معالجة 1 عقار معلق
+2025-07-25 17:27:34 - property.21 - INFO - 🏠 بدء معالجة العقار - المنطقة: 
+2025-07-25 17:27:34 - property.21 - INFO - ⚙️ استخراج البيانات - سلسلة الذكاء الاصطناعي
+2025-07-25 17:27:34 - property.21 - ERROR - ❌ استخراج البيانات - خطأ: 'PropertyData' object has no attribute 'serial_number'
+2025-07-25 17:27:34 - utils.database - INFO - ✅ تم تحديث العقار: 21
+2025-07-25 17:27:34 - services.telegram_service - ERROR - ❌ خطأ HTTP في حذف الرسالة: 400
+2025-07-25 17:27:34 - services.telegram_service - INFO - ✅ تم إرسال الرسالة بواسطة بوت الرئيسي
+2025-07-25 17:27:34 - property.21 - INFO - ✅ استبدال رسالة الفشل - تم التنسيق
+2025-07-25 17:27:34 - property.21 - ERROR - 💥 فشلت معالجة العقار - الحالة النهائية: عقار فاشل
+2025-07-25 17:27:35 - processors.property_processor - ERROR - ❌ خطأ في إعادة معالجة العقارات الفاشلة: 'DatabaseManager' object has no attribute 'get_failed_properties'
+2025-07-25 17:27:35 - processors.property_processor - INFO - ✅ انتهت دورة المعالجة - نجح: 1
+2025-07-25 17:32:35 - processors.property_processor - INFO - 🔄 بدء دورة معالجة جديدة...
+2025-07-25 17:32:36 - services.telegram_service - INFO - ✅ تم الحصول على 1 رسالة من القناة
+2025-07-25 17:32:36 - processors.property_processor - INFO - 🔄 معالجة 1 عقار معلق
+2025-07-25 17:32:36 - property.21 - INFO - 🏠 بدء معالجة العقار - المنطقة: 
+2025-07-25 17:32:36 - property.21 - INFO - ⚙️ استخراج البيانات - سلسلة الذكاء الاصطناعي
+2025-07-25 17:32:36 - property.21 - ERROR - ❌ استخراج البيانات - خطأ: 'PropertyData' object has no attribute 'serial_number'
+2025-07-25 17:32:36 - utils.database - INFO - ✅ تم تحديث العقار: 21
+2025-07-25 17:32:36 - services.telegram_service - ERROR - ❌ خطأ HTTP في حذف الرسالة: 400
+2025-07-25 17:32:36 - services.telegram_service - INFO - ✅ تم إرسال الرسالة بواسطة بوت الرئيسي
+2025-07-25 17:32:36 - property.21 - INFO - ✅ استبدال رسالة الفشل - تم التنسيق
+2025-07-25 17:32:36 - property.21 - ERROR - 💥 فشلت معالجة العقار - الحالة النهائية: عقار فاشل
+2025-07-25 17:32:37 - processors.property_processor - ERROR - ❌ خطأ في إعادة معالجة العقارات الفاشلة: 'DatabaseManager' object has no attribute 'get_failed_properties'
+2025-07-25 17:32:37 - processors.property_processor - INFO - ✅ انتهت دورة المعالجة - نجح: 1
+2025-07-25 17:37:37 - processors.property_processor - INFO - 🔄 بدء دورة معالجة جديدة...
+2025-07-25 17:37:37 - services.telegram_service - INFO - ✅ تم الحصول على 1 رسالة من القناة
+2025-07-25 17:37:37 - processors.property_processor - INFO - 🔄 معالجة 1 عقار معلق
+2025-07-25 17:37:37 - property.21 - INFO - 🏠 بدء معالجة العقار - المنطقة: 
+2025-07-25 17:37:37 - property.21 - INFO - ⚙️ استخراج البيانات - سلسلة الذكاء الاصطناعي
+2025-07-25 17:37:37 - property.21 - ERROR - ❌ استخراج البيانات - خطأ: 'PropertyData' object has no attribute 'serial_number'
+2025-07-25 17:37:37 - utils.database - INFO - ✅ تم تحديث العقار: 21
+2025-07-25 17:37:38 - services.telegram_service - ERROR - ❌ خطأ HTTP في حذف الرسالة: 400
+2025-07-25 17:37:38 - services.telegram_service - INFO - ✅ تم إرسال الرسالة بواسطة بوت الرئيسي
+2025-07-25 17:37:38 - property.21 - INFO - ✅ استبدال رسالة الفشل - تم التنسيق
+2025-07-25 17:37:38 - property.21 - ERROR - 💥 فشلت معالجة العقار - الحالة النهائية: عقار فاشل
+2025-07-25 17:37:39 - processors.property_processor - ERROR - ❌ خطأ في إعادة معالجة العقارات الفاشلة: 'DatabaseManager' object has no attribute 'get_failed_properties'
+2025-07-25 17:37:39 - processors.property_processor - INFO - ✅ انتهت دورة المعالجة - نجح: 1
