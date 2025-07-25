@@ -90,12 +90,12 @@ class AIService:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={self.config.GEMINI_API_KEY}"
 
             payload = {
-                "contents": [{
-                    "parts": [{
-                        "text": self._get_extraction_prompt() + raw_text
-                    }]
-                }]
-            }
+                        "contents": [{
+                            "parts": [{
+                                "text": self._get_extraction_prompt() + "\n\n" + raw_text
+                            }]
+                        }]
+                    }
 
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=payload) as response:
@@ -125,7 +125,7 @@ class AIService:
             payload = {
                 "model": "gpt-4",
                 "messages": [
-                    {"role": "user", "content": self._get_extraction_prompt() + raw_text}
+                    {"role": "user", "content": self._get_extraction_prompt() + "\n\n" + raw_text}
                 ],
                 "max_tokens": 1000,
                 "temperature": 0.1
@@ -175,7 +175,7 @@ class AIService:
             payload = {
                 "model": "mistral-large-latest",
                 "messages": [
-                    {"role": "user", "content": self._get_extraction_prompt() + raw_text}
+                    {"role": "user", "content": self._get_extraction_prompt() + "\n\n" + raw_text}
                 ],
                 "max_tokens": 1000,
                 "temperature": 0.1
@@ -209,7 +209,7 @@ class AIService:
             payload = {
                 "model": "llama-3.1-70b-versatile",
                 "messages": [
-                    {"role": "user", "content": self._get_extraction_prompt() + raw_text}
+                    {"role": "user", "content": self._get_extraction_prompt() + "\n\n" + raw_text}
                 ],
                 "max_tokens": 1000,
                 "temperature": 0.1
@@ -289,7 +289,7 @@ class AIService:
             # تحديد حالة الوحدة
             if 'مفروش' in raw_text:
                 extracted_data["حالة الوحدة"] = "مفروش"
-            elif 'فاضي' in raw_text or 'فاضية' in raw_text:
+            elif 'فاضي' in raw_text or 'فاضية'in raw_text:
                 extracted_data["حالة الوحدة"] = "فاضي"
             elif 'تمليك' in raw_text:
                 extracted_data["حالة الوحدة"] = "تمليك"

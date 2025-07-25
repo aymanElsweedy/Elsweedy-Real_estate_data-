@@ -11,30 +11,30 @@ class Config:
     
     def __init__(self):
         # Telegram Bot Configuration - البوتين
-        self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7238037158:AAEIEkWPUaR76ndCbwm9r7b8cyKrEac6sOM")
-        self.TELEGRAM_NOTIFICATION_BOT_TOKEN = os.getenv("TELEGRAM_NOTIFICATION_BOT_TOKEN", "8135541726:AAHxZAfaYIksBD1Lma12x5GbVzbpxsKhVmk")
-        self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "-1002874153693")
+        self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_OUTPUT_TOKEN", "")
+        self.TELEGRAM_NOTIFICATION_BOT_TOKEN = os.getenv("TELEGRAM_NOTIFICATION_BOT_TOKEN", "")
+        self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_PRIVATE_CHANNEL_ID", "")
         self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "")
         
         # Notion Configuration
-        self.NOTION_INTEGRATION_SECRET = os.getenv("NOTION_INTEGRATION_SECRET", "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")
-        self.NOTION_PROPERTIES_DB_ID = os.getenv("NOTION_PROPERTIES_DB_ID", "4f4af5e86fd94104bb8f6a931a187936")
-        self.NOTION_OWNERS_DB_ID = os.getenv("NOTION_OWNERS_DB_ID", "224ecf34ff0080009116ee1fae53330e")
+        self.NOTION_INTEGRATION_SECRET = os.getenv("NOTION_API_KEY", "")
+        self.NOTION_PROPERTIES_DB_ID = os.getenv("PROPERTIES_DATABASE_ID", "")
+        self.NOTION_OWNERS_DB_ID = os.getenv("OWNERS_DATABASE_ID", "")
         
         # AI Services Configuration - جميع مزودي الذكاء الاصطناعي
         self.ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
-        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBXGqbXJk0VyivjSwLPidU9HYPqmTfqLCk")
+        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+        self.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
         self.COPILOT_API_KEY = os.getenv("COPILOT_API_KEY", "")
-        self.MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "soMr4s2jGPzGrKO00BOjOh7Vrhb5IxMP")
-        self.GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
+        self.MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
+        self.GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
         
         # Zoho CRM Configuration - موديول Aqar الجديد
-        self.ZOHO_CLIENT_ID = os.getenv("ZOHO_CLIENT_ID", "1000.OBIGSUQKCC2THQM9VY3TXW6NXV9WHV")
-        self.ZOHO_CLIENT_SECRET = os.getenv("ZOHO_CLIENT_SECRET", "58db3c4cfd6522f8cca0282747ef300514f55c1ad8")
-        self.ZOHO_REFRESH_TOKEN = os.getenv("ZOHO_REFRESH_TOKEN", "1000.a7e96420b2fd242b26732fa7f5a4c2f6.8269f1c317bdbbac53666a61d9fbe454")
+        self.ZOHO_CLIENT_ID = os.getenv("ZOHO_CLIENT_ID", "")
+        self.ZOHO_CLIENT_SECRET = os.getenv("ZOHO_CLIENT_SECRET", "")
+        self.ZOHO_REFRESH_TOKEN = os.getenv("ZOHO_REFRESH_TOKEN", "")
         self.ZOHO_ACCESS_TOKEN = os.getenv("ZOHO_ACCESS_TOKEN", "")
-        self.ZOHO_MODULE_NAME = os.getenv("ZOHO_MODULE_NAME", "Aqar")  # موديول جديد
+        self.ZOHO_MODULE_NAME = os.getenv("ZOHO_MODULE_NAME", "Aqar")
         
         # Database Configuration
         self.DATABASE_PATH = os.getenv("DATABASE_PATH", "real_estate.db")
