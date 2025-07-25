@@ -23,7 +23,12 @@ class TelegramService:
         self.archive_channel_id = config.TELEGRAM_ARCHIVE_CHANNEL_ID
         
         self.main_bot_url = f"https://api.telegram.org/bot{self.main_bot_token}"
-        self.notification_bot_url = f"https://api.telegram.org/bot{self.notification_bot_token}" if self.notification_bot_token else self.main_bot_url
+        # إذا لم يكن بوت الإشعارات متاحاً، استخدم البوت الرئيسي
+        if self.notification_bot_token and self.notification_bot_token.strip():
+            self.notification_bot_url = f"https://api.telegram.org/bot{self.notification_bot_token}"
+        else:
+            self.notification_bot_url = self.main_bot_url
+            logger.warning("⚠️ بوت الإشعارات غير متاح - سيتم استخدام البوت الرئيسي")
         
         self.session = None
         
@@ -117,7 +122,12 @@ class TelegramService:
     
     async def send_notification(self, text: str, parse_mode: str = "HTML") -> bool:
         """إرسال إشعار باستخدام بوت الإشعارات"""
-        return await self.send_message(text, parse_mode, use_main_bot=False)
+        if self.notification_bot_token and self.notification_bot_token.strip():
+            logger.info("📢 إرسال إشعار باستخدام بوت الإشعارات")
+            return await self.send_message(text, parse_mode, use_main_bot=False)
+        else:
+            logger.warning("⚠️ بوت الإشعارات غير متاح - استخدام البوت الرئيسي")
+            return await self.send_message(text, parse_mode, use_main_bot=True)
     
     async def send_message(self, text: str, parse_mode: str = "HTML", use_main_bot: bool = True) -> bool:
         """إرسال رسالة إلى القناة"""
@@ -140,7 +150,10 @@ class TelegramService:
                 if response.status == 200:
                     result = await response.json()
                     if result.get("ok"):
-                        bot_name = "الرئيسي" if use_main_bot else "الإشعارات"
+                        if use_main_bot:
+                            bot_name = "الرئيسي"
+                        else:
+                            bot_name = "الإشعارات" if (self.notification_bot_token and self.notification_bot_token.strip()) else "الرئيسي (احتياطي)"
                         logger.info(f"✅ تم إرسال الرسالة بواسطة بوت {bot_name}")
                         return True
                     else:
