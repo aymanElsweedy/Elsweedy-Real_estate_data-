@@ -8,7 +8,7 @@ channel = "stable-25_05"
 run = ["sh", "-c", "run"]
 
 [workflows]
-runButton = "Run Demo Web Interface"
+runButton = "Start Real Estate System"
 
 [[workflows.workflow]]
 name = "Run Real Estate System"
@@ -135,6 +135,24 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python demo_web_interface.py"
+
+[[workflows.workflow]]
+name = "Run Real System"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python real_system.py"
+
+[[workflows.workflow]]
+name = "Start Real Estate System"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python real_system.py"
 
 [[ports]]
 localPort = 5000
