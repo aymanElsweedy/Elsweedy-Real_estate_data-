@@ -10,12 +10,12 @@ class Config:
     """فئة إعدادات النظام المحدثة"""
     
     def __init__(self):
-        # Telegram Bot Configuration - البوتين
-        self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_OUTPUT_TOKEN", "")
+        # Telegram Bot Configuration - البوتات الثلاثة
+        self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_OUTPUT_TOKEN", "")  # سيتم استخدام بوت المُرسِل كبديل
         self.TELEGRAM_NOTIFICATION_BOT_TOKEN = os.getenv("TELEGRAM_NOTIFICATION_BOT_TOKEN", "8220146739:AAELNrVXHGJodSaEMwglQwIQZemz8C_4NTY")
-        # القناة الرئيسية للمعالجة (ضع معرف القناة هنا)
-        self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_PRIVATE_CHANNEL_ID", "-1002394758962")  # معرف القناة الرئيسية
-        self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "-1002711636474")
+        # القناة الوحيدة - قناة الأرشيف (هي القناة الرئيسية والأرشيف معاً)
+        self.TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "-1002711636474")  # قناة Real_estate Archive
+        self.TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "-1002711636474")  # نفس القناة
         
         # Telegram API Configuration
         self.TELEGRAM_API_ID = os.getenv("TELEGRAM_API_ID", "23358202")

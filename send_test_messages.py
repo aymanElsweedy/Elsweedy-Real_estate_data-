@@ -12,8 +12,8 @@ logger = setup_logger(__name__)
 
 # بيانات البوت
 SENDER_BOT_TOKEN = "7613162592:AAFnqn3_1lPPClVUa1jckOXj44C2MGCVLHs"
-# القناة الرئيسية للمعالجة (حيث يرسل البوت الرسائل من الزملاء)
-MAIN_PROCESSING_CHANNEL_ID = "-1002394758962"  # القناة الرئيسية للمعالجة
+# قناة الأرشيف الوحيدة (هي القناة الرئيسية للمعالجة والأرشفة)
+MAIN_PROCESSING_CHANNEL_ID = "-1002711636474"  # Real_estate Archive Channel
 
 # الرسائل التجريبية
 TEST_MESSAGES = [
