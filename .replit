@@ -163,6 +163,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python real_system.py"
 
+[[workflows.workflow]]
+name = "Send Test Property Messages"
+author = 45516282
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python send_test_messages.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
