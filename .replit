@@ -18,3 +18,21 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[workflows.workflow]]
+name = "Test Complete System"
+author = 45496958
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_complete_workflow.py"
+
+[[workflows.workflow]]
+name = "Send Test Messages"
+author = 45496958
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python send_to_telegram.py"
